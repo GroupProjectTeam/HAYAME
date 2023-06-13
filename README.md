@@ -11,7 +11,7 @@ MARKDOWNの書き方は[こちら](https://gist.github.com/mignonstyle/083c9e165
 改行は半角スペース二つ  
 箇条書きはハイフンの後に半角で以降文字列「-(半角)項目１」
 
-## 毎週の進捗の報告の仕方
+## 毎週の進捗
 Googleスプレッドシート
 [6/13](https://docs.google.com/document/d/19bJnzNbsbtFxdCTpE_rWWSw3wYxsmmXaZSQ9vzFKVvA/edit?usp=sharing)
 
@@ -24,10 +24,13 @@ Googleスプレッドシート
 - 仮想環境の構築，揃える(condaが助かります．前の時pyenv的なの確かうまくいかなかった気がする)
 - 分担決め（matsuo:前回はUIをメインにやった感じになったのでバックエンドやってみたいが一人じゃ無理）
 
-やったこと
+決まったこと
 - フレームワーク：Flutter
 - 言語:Dart
 - システム：予定を変更するたびに新しい予定表を提供してくれる（カーナビ的な）
-- 分担：JIANG(UI),Gao(アルゴリズム),谷(),リーダー()
+- 分担：JIANG(UI),Gao(アルゴリズム),谷(情報管理),リーダー(情報管理)
+
+やること
+- input, output はもっとやっておく必要がある
 
 2.6/20やること
