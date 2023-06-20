@@ -13,12 +13,12 @@ MARKDOWNの書き方は[こちら](https://gist.github.com/mignonstyle/083c9e165
 
 ## Githubの使い方
 pull ~ push まで
-git pull origin
+git pull origin  
 
-git add .
-git commit -m ”name”
+git add .  
+git commit -m ”name”  
 
-git push origin <branch_name>
+git push origin <branch_name>  
 
 ## 毎週の進捗
 Googleスプレッドシート
