@@ -1,115 +1,177 @@
 import 'package:flutter/material.dart';
+import 'database_helper.dart';
+import 'database_function.dart' as fc;
+import 'database_read_load.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class MyHomePage extends StatelessWidget {
+  // DatabaseHelper クラスのインスタンス取得
+  final dbHelper = DatabaseHelper.instance;
+  TestDataController testDataController = TestDataController();
+  TaskDataController taskDataController = TaskDataController();
+  AppointmentDataController appointmentDataController =
+      AppointmentDataController();
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
+  // homepage layout
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('SQLiteデモ'),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            ElevatedButton(
+              onPressed: _insertTask,
+              child: const Text(
+                'Task追加',
+                style: TextStyle(fontSize: 35),
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            ElevatedButton(
+              onPressed: _insertAppointment,
+              child: const Text(
+                'Appointment追加',
+                style: TextStyle(fontSize: 35),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _readTest,
+              child: const Text(
+                'Test読み込み',
+                style: TextStyle(fontSize: 35),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _saveTest,
+              child: const Text(
+                'Test保存',
+                style: TextStyle(fontSize: 35),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _readTask,
+              child: const Text(
+                'Task読み込み',
+                style: TextStyle(fontSize: 35),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _saveTask,
+              child: const Text(
+                'Task保存',
+                style: TextStyle(fontSize: 35),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _readAppointment,
+              child: const Text(
+                'Appointment読み込み',
+                style: TextStyle(fontSize: 35),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _saveAppointment,
+              child: const Text(
+                'Appointment保存',
+                style: TextStyle(fontSize: 35),
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  // 登録ボタンクリック
+  void _insert() async {
+    // row to insert
+    Map<String, dynamic> row = {
+      DatabaseHelper.columnName: '山田 太郎',
+      DatabaseHelper.columnAge: 35
+    };
+    final id = await dbHelper.insert(row);
+    debugPrint('登録しました。id: $id');
+  }
+
+  void _insertTask() async {
+    String titleFromUI = "task1";
+    DateTime deadlineFromUI = DateTime(2023, 6, 30, 12, 00);
+    int durationFromUI = 60;
+    fc.add_task(titleFromUI, deadlineFromUI, durationFromUI);
+    debugPrint('登録しました。TaskTitle: $titleFromUI');
+  }
+
+  void _insertAppointment() async {
+    String titleFromUI = "appointment1";
+    DateTime beginTimeFromUI = DateTime(2023, 6, 20, 13, 00);
+    DateTime endTimeFromUI = DateTime(2023, 6, 20, 14, 00);
+    fc.add_appointment(titleFromUI, beginTimeFromUI, endTimeFromUI);
+    debugPrint('登録しました。AppointmentTitle: $titleFromUI');
+  }
+
+  // 照会ボタンクリック
+  void _query() async {
+    final allRows = await dbHelper.queryAllRows();
+    debugPrint('全てのデータを照会しました。');
+    for (var element in allRows) {
+      debugPrint(element.toString());
+    }
+  }
+
+  // 更新ボタンクリック
+  void _update() async {
+    Map<String, dynamic> row = {
+      DatabaseHelper.columnId: 1,
+      DatabaseHelper.columnName: '鈴木 一郎',
+      DatabaseHelper.columnAge: 48
+    };
+    final rowsAffected = await dbHelper.update(row);
+    debugPrint('更新しました。 ID: $rowsAffected ');
+  }
+
+  // 削除ボタンクリック
+  void _delete() async {
+    final id = await dbHelper.queryRowCount();
+    final rowsDeleted = await dbHelper.delete(id!);
+    debugPrint('削除しました。 $rowsDeleted ID: $id');
+  }
+
+  void _readTest() async {
+    testDataController.readTestData();
+  }
+
+  void _saveTest() async {
+    testDataController.setInitialSharedPrefrences();
+  }
+
+  void _readTask() async {
+    taskDataController.readTaskData();
+  }
+
+  void _saveTask() async {
+    taskDataController.setInitialSharedPrefrences();
+  }
+
+  void _readAppointment() async {
+    appointmentDataController.readAppointmentData();
+  }
+
+  void _saveAppointment() async {
+    appointmentDataController.setInitialSharedPrefrences();
   }
 }
