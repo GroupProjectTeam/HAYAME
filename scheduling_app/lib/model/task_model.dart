@@ -1,4 +1,5 @@
 //task_DB = [ [task_id, title, deadline, duration, real_duration, if_done] ];
+import 'package:intl/intl.dart';
 
 class TaskModel {
   final int id;
@@ -20,17 +21,17 @@ class TaskModel {
   Map toJson() => {
         'id': id,
         'title': title,
-        'deadline': deadline,
+        'deadline': deadline.toString(),
         'duration': duration,
         'realDuration': realDuration,
-        'idDone': ifDone
+        'ifDone': ifDone
       };
 
   /// JSONオブジェクトを代入
   TaskModel.fromJson(Map json)
       : id = json['id'],
         title = json['title'],
-        deadline = json['deadline'],
+        deadline = DateFormat('y-M-d h:m:00.000').parse(json['deadline']),
         duration = json['duration'],
         realDuration = json['realDuration'],
         ifDone = json['ifDone'];

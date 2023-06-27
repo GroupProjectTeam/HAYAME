@@ -1,4 +1,5 @@
 //schedule_DB = [ [schedule_id (, subtask_id), begin_time, end_time] ]
+import 'package:intl/intl.dart';
 
 class ScheduleModel {
   final int id;
@@ -11,13 +12,13 @@ class ScheduleModel {
   /// Map型に変換
   Map toJson() => {
         'id': id,
-        'beginTime': beginTime,
-        'endTime': endTime,
+        'beginTime': beginTime.toString(),
+        'endTime': endTime.toString(),
       };
 
   /// JSONオブジェクトを代入
   ScheduleModel.fromJson(Map json)
       : id = json['id'],
-        beginTime = json['beginTime'],
-        endTime = json['endTime'];
+        beginTime = DateFormat('y-M-d h:m:00.000').parse(json['beginTime']),
+        endTime = DateFormat('y-M-d h:m:00.000').parse(json['endTime']);
 }
