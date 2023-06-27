@@ -1,4 +1,5 @@
 //appointment_DB = [ [appointment_id, title, begin_time, end_time] ]
+import 'package:intl/intl.dart';
 
 class AppointmentModel {
   final int id;
@@ -16,14 +17,14 @@ class AppointmentModel {
   Map toJson() => {
         'id': id,
         'title': title,
-        'beginTime': beginTime,
-        'endTime': endTime,
+        'beginTime': beginTime.toString(),
+        'endTime': endTime.toString(),
       };
 
   /// JSONオブジェクトを代入
   AppointmentModel.fromJson(Map json)
       : id = json['id'],
         title = json['title'],
-        beginTime = json['beginTime'],
-        endTime = json['endTime'];
+        beginTime = DateFormat('y-M-d h:m:00.000').parse(json['beginTime']),
+        endTime = DateFormat('y-M-d h:m:00.000').parse(json['endTime']);
 }
