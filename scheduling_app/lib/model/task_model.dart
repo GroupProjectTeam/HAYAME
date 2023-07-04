@@ -1,13 +1,12 @@
-//task_DB = [ [task_id, title, deadline, duration, real_duration, if_done] ];
 import 'package:intl/intl.dart';
 
 class TaskModel {
-  final int id;
-  String title;
-  DateTime deadline;
-  int duration;
-  int realDuration = 0;
-  bool ifDone = false;
+  final int id; // 5桁の数字.
+  String title; // タスクの名前.
+  DateTime deadline; // タスクの締め切り.
+  int duration; // タスクの見積もり時間.
+  int realDuration = 0; // タスクの実際にかかった時間.
+  bool ifDone = false; // タスクが完了したかどうか.
 
   TaskModel(
       {required this.id,
@@ -17,7 +16,7 @@ class TaskModel {
       required this.realDuration,
       required this.ifDone});
 
-  /// Map型に変換
+  // Map型に変換.
   Map toJson() => {
         'id': id,
         'title': title,
@@ -27,7 +26,7 @@ class TaskModel {
         'ifDone': ifDone
       };
 
-  /// JSONオブジェクトを代入
+  // JSONオブジェクトを代入.
   TaskModel.fromJson(Map json)
       : id = json['id'],
         title = json['title'],

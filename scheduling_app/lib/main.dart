@@ -1,177 +1,87 @@
 import 'package:flutter/material.dart';
-import 'database_helper.dart';
+import 'package:scheduling_app/model/task_model.dart';
+import 'package:scheduling_app/model/appointment_model.dart';
+import 'database.dart' as db;
 import 'database_function.dart' as fc;
 import 'database_read_load.dart';
 
-void main() => runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  // DatabaseHelper クラスのインスタンス取得
-  final dbHelper = DatabaseHelper.instance;
-  TestDataController testDataController = TestDataController();
   TaskDataController taskDataController = TaskDataController();
   AppointmentDataController appointmentDataController =
       AppointmentDataController();
 
-  // homepage layout
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('SQLiteデモ'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            ElevatedButton(
-              onPressed: _insertTask,
-              child: const Text(
-                'Task追加',
-                style: TextStyle(fontSize: 35),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _insertAppointment,
-              child: const Text(
-                'Appointment追加',
-                style: TextStyle(fontSize: 35),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _readTest,
-              child: const Text(
-                'Test読み込み',
-                style: TextStyle(fontSize: 35),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _saveTest,
-              child: const Text(
-                'Test保存',
-                style: TextStyle(fontSize: 35),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _readTask,
-              child: const Text(
-                'Task読み込み',
-                style: TextStyle(fontSize: 35),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _saveTask,
-              child: const Text(
-                'Task保存',
-                style: TextStyle(fontSize: 35),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _readAppointment,
-              child: const Text(
-                'Appointment読み込み',
-                style: TextStyle(fontSize: 35),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _saveAppointment,
-              child: const Text(
-                'Appointment保存',
-                style: TextStyle(fontSize: 35),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  debugPrint("---Task start---");
+  fc.debug_print_query_task();
+  debugPrint("---read---");
+  await taskDataController.readTaskData();
+  fc.debug_print_query_task();
+  debugPrint("---add---");
+  fc.add_task("taskTitle1", DateTime(2023, 6, 1, 12, 00), 30);
+  fc.debug_print_query_task();
+  debugPrint("---delete---");
+  fc.delete_task(db.task_DB[0].id);
+  fc.debug_print_query_task();
+  debugPrint("---add 2---");
+  fc.add_task("taskTitle2", DateTime(2023, 6, 2, 12, 00), 30);
+  fc.add_task("taskTitle3", DateTime(2023, 6, 3, 12, 00), 30);
+  fc.debug_print_query_task();
+  debugPrint("---change---");
+  TaskModel newtaskFromUi = TaskModel(
+      id: db.task_DB[0].id,
+      title: "changed Task title",
+      deadline: db.task_DB[0].deadline,
+      duration: db.task_DB[0].duration,
+      realDuration: db.task_DB[0].realDuration,
+      ifDone: db.task_DB[0].ifDone);
+  fc.change_task(db.task_DB[0].id, newtaskFromUi);
+  fc.debug_print_query_task();
+  debugPrint("---done---");
+  fc.done_task(db.task_DB[0].id, 120);
+  fc.debug_print_query_task();
+  debugPrint("---all delete---");
+  fc.all_delete_task();
+  fc.debug_print_query_task();
+  debugPrint("---add final---");
+  fc.add_task("taskTitleFinal", DateTime(2023, 6, 30, 12, 00), 30);
+  fc.debug_print_query_task();
+  debugPrint("---save---");
+  await taskDataController.setInitialSharedPrefrences();
 
-  // 登録ボタンクリック
-  void _insert() async {
-    // row to insert
-    Map<String, dynamic> row = {
-      DatabaseHelper.columnName: '山田 太郎',
-      DatabaseHelper.columnAge: 35
-    };
-    final id = await dbHelper.insert(row);
-    debugPrint('登録しました。id: $id');
-  }
-
-  void _insertTask() async {
-    String titleFromUI = "task1";
-    DateTime deadlineFromUI = DateTime(2023, 6, 30, 12, 00);
-    int durationFromUI = 60;
-    fc.add_task(titleFromUI, deadlineFromUI, durationFromUI);
-    debugPrint('登録しました。TaskTitle: $titleFromUI');
-  }
-
-  void _insertAppointment() async {
-    String titleFromUI = "appointment1";
-    DateTime beginTimeFromUI = DateTime(2023, 6, 20, 13, 00);
-    DateTime endTimeFromUI = DateTime(2023, 6, 20, 14, 00);
-    fc.add_appointment(titleFromUI, beginTimeFromUI, endTimeFromUI);
-    debugPrint('登録しました。AppointmentTitle: $titleFromUI');
-  }
-
-  // 照会ボタンクリック
-  void _query() async {
-    final allRows = await dbHelper.queryAllRows();
-    debugPrint('全てのデータを照会しました。');
-    for (var element in allRows) {
-      debugPrint(element.toString());
-    }
-  }
-
-  // 更新ボタンクリック
-  void _update() async {
-    Map<String, dynamic> row = {
-      DatabaseHelper.columnId: 1,
-      DatabaseHelper.columnName: '鈴木 一郎',
-      DatabaseHelper.columnAge: 48
-    };
-    final rowsAffected = await dbHelper.update(row);
-    debugPrint('更新しました。 ID: $rowsAffected ');
-  }
-
-  // 削除ボタンクリック
-  void _delete() async {
-    final id = await dbHelper.queryRowCount();
-    final rowsDeleted = await dbHelper.delete(id!);
-    debugPrint('削除しました。 $rowsDeleted ID: $id');
-  }
-
-  void _readTest() async {
-    testDataController.readTestData();
-  }
-
-  void _saveTest() async {
-    testDataController.setInitialSharedPrefrences();
-  }
-
-  void _readTask() async {
-    taskDataController.readTaskData();
-  }
-
-  void _saveTask() async {
-    taskDataController.setInitialSharedPrefrences();
-  }
-
-  void _readAppointment() async {
-    appointmentDataController.readAppointmentData();
-  }
-
-  void _saveAppointment() async {
-    appointmentDataController.setInitialSharedPrefrences();
-  }
+  debugPrint("---Appointment start---");
+  fc.debug_print_query_appointment();
+  debugPrint("---read---");
+  await appointmentDataController.readAppointmentData();
+  fc.debug_print_query_appointment();
+  debugPrint("---add---");
+  fc.add_appointment("appointmentTitle1", DateTime(2023, 7, 1, 12, 00),
+      DateTime(2023, 7, 1, 14, 00));
+  fc.debug_print_query_appointment();
+  debugPrint("---delete---");
+  fc.delete_appointment(db.appointment_DB[0].id);
+  fc.debug_print_query_appointment();
+  debugPrint("---add 2---");
+  fc.add_appointment("appointmentTitle2", DateTime(2023, 7, 2, 12, 00),
+      DateTime(2023, 7, 2, 14, 00));
+  fc.add_appointment("appointmentTitle3", DateTime(2023, 7, 3, 12, 00),
+      DateTime(2023, 7, 3, 14, 00));
+  fc.debug_print_query_appointment();
+  debugPrint("---change---");
+  AppointmentModel newAppointmentFromUi = AppointmentModel(
+      id: db.appointment_DB[0].id,
+      title: "changed appointment title",
+      beginTime: db.appointment_DB[0].beginTime,
+      endTime: db.appointment_DB[0].endTime);
+  fc.change_appointment(db.appointment_DB[0].id, newAppointmentFromUi);
+  fc.debug_print_query_appointment();
+  debugPrint("---all delete---");
+  fc.all_delete_appointment();
+  fc.debug_print_query_appointment();
+  debugPrint("---add final---");
+  fc.add_appointment("appointmentTitleFinal", DateTime(2023, 7, 31, 12, 00),
+      DateTime(2023, 7, 31, 14, 00));
+  fc.debug_print_query_appointment();
+  debugPrint("---save---");
+  await appointmentDataController.setInitialSharedPrefrences();
 }
