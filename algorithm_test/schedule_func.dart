@@ -2,33 +2,37 @@ import 'database.dart' as db;
 
 List TEMP_TASK_DB = db_task2TEMP();
 List TEMP_APPOINTMENT_DB = db_appointment2TEMP();
+DateTime CURRENT_TIME = DateTime(2023, 7, 3);
+int INTERVAL_TIME = 10;
+int RESTING_START_TIME = 22;
+int RESTING_END_TIME = 8;
 
 /* need to convert */
 List db_task2TEMP() {
   List result = [];
-  // for (db.TaskModel item in db.task_DB){
-  //   int id = item.id;
-  //   String title = item.title;
-  //   int deadline = item.deadline.millisecondsSinceEpoch;
-  //   int duration = item.duration * 60000;
-  //   int real_duration = item.realDuration * 60000;
-  //   bool if_done = item.ifDone;
-  //   result.add([id, title, deadline, duration, real_duration, if_done])
-  // }
-  result = List.from(db.task_DB);
+  for (TaskModel item in db.task_DB) {
+    int id = item.id;
+    String title = item.title;
+    int deadline = item.deadline.millisecondsSinceEpoch;
+    int duration = item.duration * 60000;
+    int real_duration = item.realDuration * 60000;
+    bool if_done = item.ifDone;
+    result.add([id, title, deadline, duration, real_duration, if_done]);
+  }
+  // result = List.from(db.task_DB);
   return result;
 }
 
 List db_appointment2TEMP() {
   List result = [];
-  // for (db.AppointmentModel item in db.task_DB) {
-  //   int id = item.id;
-  //   String title = item.title;
-  //   int begin_time = item.beginTime.millisecondsSinceEpoch;
-  //   int end_time = item.endTime.millisecondsSinceEpoch;
-  //   result.add([id, title, begin_time, end_time]);
-  // }
-  result = List.from(db.appointment_DB);
+  for (AppointmentModel item in db.appointment_DB) {
+    int id = item.id;
+    String title = item.title;
+    int begin_time = item.beginTime.millisecondsSinceEpoch;
+    int end_time = item.endTime.millisecondsSinceEpoch;
+    result.add([id, title, begin_time, end_time]);
+  }
+  // result = List.from(db.appointment_DB);
   return result;
 }
 
@@ -60,6 +64,7 @@ bool schedule_task(task_id) {
     return false;
   } else {
     List free_time_list = calculate_free_time(deadline, duration);
+    // free_time_list = insertion_sort_double_list(free_time_list, 1);
     if (free_time_list.length > 0) {
       print("start arrange task" + task_id.toString());
       // print("in free time list:");
@@ -76,11 +81,12 @@ bool schedule_task(task_id) {
 
 List calculate_free_time(int deadline, int duration) {
   // return a list of free time, given schedule_DB
-  // print("in caculate_free_time");
+  // print("in calculate_free_time");
   List result = [];
   for (List free_time in db.free_DB) {
-    int free_time_duration = free_time[2] - free_time[1];
-    int end_free_time = free_time[2];
+    int free_time_duration =
+        free_time[2] - free_time[1] - 60000 * 2 * INTERVAL_TIME;
+    int end_free_time = free_time[2] - 60000 * INTERVAL_TIME;
     if ((duration <= free_time_duration) & (deadline >= end_free_time)) {
       result.add(free_time);
     }
@@ -89,16 +95,16 @@ List calculate_free_time(int deadline, int duration) {
 }
 
 List recommend_free_time(List free_time_list) {
-  /* Now we only retrun the last free_time */
+  /* Now we only retrun the first free_time */
   free_time_list = insertion_sort_double_list(free_time_list, 1);
-  return free_time_list.last;
+  return free_time_list.first;
 }
 
 void arrange_task(List task, List free_time) {
   int new_task_id = task[0];
   int new_sub_task_id = 001;
   int task_duration = task[3];
-  int new_begin_time = free_time[1];
+  int new_begin_time = free_time[1] + 60000 * INTERVAL_TIME;
   int new_end_time = task_duration + new_begin_time;
   var new_title = task[1];
   List new_task_schedule = [
@@ -177,11 +183,15 @@ int search_index_by_id(int id, List l) {
 bool schedule_tasks() {
   /* schedule all tasks in TEMP_TASK_DB */
   List task_id_list = [];
-  List temp_task_DB = insertion_sort_double_list(TEMP_TASK_DB, 3);
+  List temp_task_DB =
+      insertion_sort_double_list(TEMP_TASK_DB, 2); // sort tasks by deadline
   // for (List task in temp_task_DB) {
   //   task_id_list.add(task[0]);
   // }
-  for (int i = temp_task_DB.length - 1; i >= 0; i--) {
+  for (int i = 0; i < temp_task_DB.length; i++) {
+    if (temp_task_DB[i][5]) {
+      continue;
+    }
     task_id_list.add(temp_task_DB[i][0]);
   }
   for (int task_id in task_id_list) {
@@ -196,6 +206,8 @@ bool schedule_tasks() {
 }
 
 void initialize_appointment_and_schedule_DB() {
+  TEMP_TASK_DB = db_task2TEMP();
+  TEMP_APPOINTMENT_DB = db_appointment2TEMP();
   db.appointment_and_schedule_DB.clear();
   for (List appointment in TEMP_APPOINTMENT_DB) {
     int display_id = db.appointment_and_schedule_DB.length;
@@ -203,6 +215,31 @@ void initialize_appointment_and_schedule_DB() {
     int begin_time = appointment[2]; // need to convert to string
     int end_time = appointment[3];
     int original_id = appointment[0];
+    int is_appointment = 1;
+    List new_item = [
+      display_id,
+      title,
+      begin_time,
+      end_time,
+      is_appointment,
+      original_id
+    ];
+    db.appointment_and_schedule_DB.add(new_item);
+  }
+  int time_length = DateTime.fromMillisecondsSinceEpoch(db.SYS_END_TIME)
+          .difference(DateTime.fromMillisecondsSinceEpoch(db.SYS_START_TIME))
+          .inDays +
+      1;
+  for (int i = 0; i < time_length; i++) {
+    int display_id = db.appointment_and_schedule_DB.length;
+    var title = "rest";
+    int begin_time = CURRENT_TIME
+        .add(Duration(hours: (RESTING_START_TIME + 24 * i)))
+        .millisecondsSinceEpoch;
+    int end_time = CURRENT_TIME
+        .add(Duration(hours: (RESTING_END_TIME + 24 * (i + 1))))
+        .millisecondsSinceEpoch;
+    int original_id = display_id;
     int is_appointment = 1;
     List new_item = [
       display_id,
@@ -248,7 +285,9 @@ String timestamp2date(int time) {
 
 String timestamp2hour_minute(int time) {
   DateTime date = DateTime.fromMillisecondsSinceEpoch(time);
-  String result = date.hour.toString() + ":" + date.minute.toString();
+  String result = date.hour.toString().padLeft(2, "0") +
+      ":" +
+      date.minute.toString().padLeft(2, "0");
   return result;
 }
 
@@ -269,49 +308,54 @@ List data_UI() {
   List temp_list =
       insertion_sort_double_list(db.appointment_and_schedule_DB, 2);
   for (List item in temp_list) {
-    int id = item[0];
+    print(item);
+    int id = item[5];
     String title = item[1];
     String day = timestamp2date(item[2]);
     String start_hour_minute = timestamp2hour_minute(item[2]);
     String end_hour_minute = timestamp2hour_minute(item[3]);
     String hour_difference = timestamp2hour_difference(item[2], item[3]);
-    String today = timestamp2date(DateTime.now().millisecondsSinceEpoch);
+    String today = timestamp2date(CURRENT_TIME.millisecondsSinceEpoch);
     String tomorrow = timestamp2date(
-        DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
-    // if (day == today) {
-    //   output_today.add([
-    //     id,
-    //     title,
-    //     day,
-    //     start_hour_minute,
-    //     end_hour_minute,
-    //     hour_difference
-    //   ]);
-    // } else {
-    //   if (day == tomorrow) {
-    //     output_tomorrow.add([
-    //       id,
-    //       title,
-    //       day,
-    //       start_hour_minute,
-    //       end_hour_minute,
-    //       hour_difference
-    //     ]);
-    //   } else {
-    //     output_other.add([
-    //       id,
-    //       title,
-    //       day,
-    //       start_hour_minute,
-    //       end_hour_minute,
-    //       hour_difference
-    //     ]);
-    //   }
-    // }
-    output.add(
-        [id, title, day, start_hour_minute, end_hour_minute, hour_difference]);
+        CURRENT_TIME.add(Duration(days: 1)).millisecondsSinceEpoch);
+    int if_appointment = item[4];
+    if (day == today) {
+      output_today.add([
+        id,
+        title,
+        day,
+        start_hour_minute,
+        end_hour_minute,
+        hour_difference,
+        if_appointment
+      ]);
+    } else {
+      if (day == tomorrow) {
+        output_tomorrow.add([
+          id,
+          title,
+          day,
+          start_hour_minute,
+          end_hour_minute,
+          hour_difference,
+          if_appointment
+        ]);
+      } else {
+        output_other.add([
+          id,
+          title,
+          day,
+          start_hour_minute,
+          end_hour_minute,
+          hour_difference,
+          if_appointment
+        ]);
+      }
+    }
+    // output.add(
+    //     [id, title, day, start_hour_minute, end_hour_minute, hour_difference]);
   }
-  // output = [output_today, output_tomorrow, output_other];
+  output = [output_today, output_tomorrow, output_other];
   return output;
 }
 
@@ -319,30 +363,13 @@ List schedule_arranger() {
   /* After insert one or more than one tasks, run this function */
   initialize_appointment_and_schedule_DB();
   AppSch_2_free_time();
-  schedule_tasks();
+  bool result = schedule_tasks();
   List output = data_UI();
+  output.add(result);
   print(output);
   return output;
 }
 
 void main() {
-  // initialize_appointment_and_schedule_DB();
-  // print(db.appointment_and_schedule_DB);
-  // AppSch_2_free_time();
-  // print(db.free_DB);
-  // schedule_tasks();
-  // print(TEMP_APPOINTMENT_DB);
-  // print(db.appointment_and_schedule_DB);
-  // List output = data_UI();
-  // print(output);
-
-  // List l = [
-  //   [1, 100],
-  //   [3, 300],
-  //   [2, 500]
-  // ];
-  // List l0 = insertion_sort_double_list(l, 0);
-  // print(l0);
-
   schedule_arranger();
 }
