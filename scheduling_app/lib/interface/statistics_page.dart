@@ -326,7 +326,7 @@ class _HomeState extends State<Home> {
                     height: 6,
                   ),
                   Text(
-                    '(見積もり時間)>(実際にかけた時間)となる課題の個数',
+                    '(見積もり時間)<=(実際にかけた時間)となる課題の個数',
                     style: TextStyle(
                       fontSize: 15,
                       color: Colors.green,
@@ -336,7 +336,7 @@ class _HomeState extends State<Home> {
                     height: 1,
                   ),
                   Text(
-                    '(見積もり時間)<=(実際にかけた時間)となる課題の個数',
+                    '(見積もり時間)>(実際にかけた時間)となる課題の個数',
                     style: TextStyle(
                       fontSize: 15,
                       color: Colors.purple,
