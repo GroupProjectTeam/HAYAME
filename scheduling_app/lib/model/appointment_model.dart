@@ -1,11 +1,10 @@
-//appointment_DB = [ [appointment_id, title, begin_time, end_time] ]
 import 'package:intl/intl.dart';
 
 class AppointmentModel {
-  final int id;
-  String title;
-  DateTime beginTime;
-  DateTime endTime;
+  final int id; // 5桁の数字.
+  String title; // 予定名.
+  DateTime beginTime; // 予定の開始時刻.
+  DateTime endTime; // 予定の終了時刻.
 
   AppointmentModel(
       {required this.id,
@@ -13,7 +12,7 @@ class AppointmentModel {
       required this.beginTime,
       required this.endTime});
 
-  /// Map型に変換
+  // Map型に変換.
   Map toJson() => {
         'id': id,
         'title': title,
@@ -21,7 +20,7 @@ class AppointmentModel {
         'endTime': endTime.toString(),
       };
 
-  /// JSONオブジェクトを代入
+  // JSONオブジェクトを代入.
   AppointmentModel.fromJson(Map json)
       : id = json['id'],
         title = json['title'],
