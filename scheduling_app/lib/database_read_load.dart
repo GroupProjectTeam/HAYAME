@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'database.dart' as db;
 import 'model/task_model.dart';
 import 'model/appointment_model.dart';
-import 'model/schedule_model.dart';
+import 'package:hayame/model/schedule_model.dart';
 
 class TaskDataController {
   List<TaskModel> taskData = []; // 保存・読み出し用リスト.
@@ -104,7 +104,7 @@ class ScheduleDataController {
 
   // テストデータの準備.
   Future settingScheduleData() async {
-    scheduleData = db.schedule_DB;
+    //scheduleData = db.schedule_DB;
   }
 
   // 実際に保存を実行する場合はコレを呼ぶ.

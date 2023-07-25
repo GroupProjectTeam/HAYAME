@@ -1,8 +1,14 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'database.dart' as db;
-import 'package:scheduling_app/model/task_model.dart';
-import 'package:scheduling_app/model/appointment_model.dart';
+import 'package:hayame/model/task_model.dart';
+import 'package:hayame/model/appointment_model.dart';
+
+import 'database_read_load.dart';
+
+TaskDataController taskDataController = TaskDataController();
+AppointmentDataController appointmentDataController =
+    AppointmentDataController();
 
 // ランダムに数字生成.
 int randomIntWithRange(int min, int max) {
@@ -32,8 +38,6 @@ bool judge_appointment_id(int targetId) {
 
 // task追加.
 void add_task(String titleFromUI, DateTime deadlineFromUI, int durationFromUI) {
-  //int newTaskID = TaskDataController.currentID + 1;
-  //TaskDataController.currentID = newTaskID;
   int newTaskID = randomIntWithRange(10000, 99999);
   while (!judge_task_id(newTaskID)) {
     int newTaskID = randomIntWithRange(10000, 99999);
@@ -46,6 +50,7 @@ void add_task(String titleFromUI, DateTime deadlineFromUI, int durationFromUI) {
       realDuration: 0,
       ifDone: false);
   db.task_DB.add(newTask);
+  taskDataController.setInitialSharedPrefrences();
 }
 
 // task削除.
@@ -53,6 +58,7 @@ void delete_task(int taskIdFromUi) {
   for (int i = 0; i < db.task_DB.length; i++) {
     if (db.task_DB[i].id == taskIdFromUi) {
       db.task_DB.removeAt(i);
+      taskDataController.setInitialSharedPrefrences();
       return;
     }
   }
@@ -62,14 +68,16 @@ void delete_task(int taskIdFromUi) {
 // task全削除.
 void all_delete_task() {
   db.task_DB = [];
+  taskDataController.setInitialSharedPrefrences();
 }
 
 // task終了.
 void done_task(int taskIdFromUi, int realDurationFromUi) {
   for (int i = 0; i < db.task_DB.length; i++) {
     if (db.task_DB[i].id == taskIdFromUi) {
-      db.task_DB[i].duration = realDurationFromUi;
+      db.task_DB[i].realDuration = realDurationFromUi;
       db.task_DB[i].ifDone = true;
+      taskDataController.setInitialSharedPrefrences();
       return;
     }
   }
@@ -82,6 +90,7 @@ void change_task(int taskIdFromUi, TaskModel newtaskFromUi) {
     if (db.task_DB[i].id == taskIdFromUi) {
       db.task_DB.removeAt(i);
       db.task_DB.insert(i, newtaskFromUi);
+      taskDataController.setInitialSharedPrefrences();
       return;
     }
   }
@@ -112,8 +121,6 @@ void debug_print_query_task() {
 // appointment追加.
 void add_appointment(
     String titleFromUI, DateTime beginTimeFromUI, DateTime endTimeFromUI) {
-  //int newAppointmentID = AppointmentDataController.currentID + 1;
-  //AppointmentDataController.currentID = newAppointmentID;
   int newAppointmentID = randomIntWithRange(10000, 99999);
   while (!judge_appointment_id(newAppointmentID)) {
     int newAppointmentID = randomIntWithRange(10000, 99999);
@@ -124,6 +131,7 @@ void add_appointment(
       beginTime: beginTimeFromUI,
       endTime: endTimeFromUI);
   db.appointment_DB.add(newAppointment);
+  appointmentDataController.setInitialSharedPrefrences();
 }
 
 // appointment削除.
@@ -131,6 +139,7 @@ void delete_appointment(int appointmentIdFromUi) {
   for (int i = 0; i < db.appointment_DB.length; i++) {
     if (db.appointment_DB[i].id == appointmentIdFromUi) {
       db.appointment_DB.removeAt(i);
+      appointmentDataController.setInitialSharedPrefrences();
       return;
     }
   }
@@ -140,6 +149,7 @@ void delete_appointment(int appointmentIdFromUi) {
 // appointment全削除.
 void all_delete_appointment() {
   db.appointment_DB = [];
+  appointmentDataController.setInitialSharedPrefrences();
 }
 
 // appointment変更.
@@ -149,6 +159,7 @@ void change_appointment(
     if (db.appointment_DB[i].id == appointmentIdFromUi) {
       db.appointment_DB.removeAt(i);
       db.appointment_DB.insert(i, newAppointmentFromUi);
+      appointmentDataController.setInitialSharedPrefrences();
       return;
     }
   }
